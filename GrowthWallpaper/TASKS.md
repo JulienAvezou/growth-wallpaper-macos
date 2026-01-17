@@ -1,7 +1,0 @@
-- Implement Packaging & Distribution logic: Code-sign + notarize
-- Move to a “Themes directory spec” and validate themes on disk.
-- Add a Theme Import flow (select a zip/folder → copy into Themes)
-- Generate couple more bundled themes + adjust logic to bundle them: city skyscraper, starry/planetary sky, empty developer desk to super cozy dev desk
-- Update README.md with screenshots
-- Add Install.md
-- Add CONTRIBUTING.md
