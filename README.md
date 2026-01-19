@@ -89,6 +89,9 @@ You can:
 - Import a `.zip`
 - Create your own themes
 
+Example themes are included in Releases:
+Download a theme ZIP from Releases (forest, sky, desk) → Preferences → Import Theme… → Select the ZIP
+
 See [`THEMES.md`](./THEMES.md) for full details.
 
 ---
