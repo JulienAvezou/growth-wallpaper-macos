@@ -102,6 +102,8 @@ See [`THEMES.md`](./THEMES.md) for full details.
 
 ![Theme import](docs/screenshots/theme-import.png)
 
+https://github.com/user-attachments/assets/4e04e77b-7b30-4974-a985-cc6e6dc7b4ce
+
 ---
 
 ## Privacy & Security
