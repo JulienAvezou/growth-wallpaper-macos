@@ -27,18 +27,26 @@ final class ThemeManager {
         do {
             try fm.createDirectory(at: themesDir, withIntermediateDirectories: true)
 
-            // MVP: ensure forest exists on disk by copying from flat bundled resources
-            try copyBundledForestIfMissing()
-
             loadThemesFromDisk()
         } catch {
             availableThemes = []
         }
     }
 
+    var themes: [Theme] { availableThemes }
+
     func frameURL(themeId: String, index: Int) -> URL? {
-        let folder = themesDir.appendingPathComponent(themeId)
-        return frameURLInFolder(folder, index: index)
+        guard let theme = availableThemes.first(where: { $0.id == themeId }) else { return nil }
+        guard index >= 0 && index < theme.frames else { return nil }
+
+        let filename = String(format: theme.framePattern, index)
+        let png = theme.directory.appendingPathComponent("\(filename).png")
+        if fm.fileExists(atPath: png.path) { return png }
+
+        let jpg = theme.directory.appendingPathComponent("\(filename).jpg")
+        if fm.fileExists(atPath: jpg.path) { return jpg }
+
+        return nil
     }
 
     // MARK: - Disk scanning
@@ -46,63 +54,40 @@ final class ThemeManager {
     private func loadThemesFromDisk() {
         let folders = (try? fm.contentsOfDirectory(at: themesDir, includingPropertiesForKeys: nil)) ?? []
 
-        availableThemes = folders.compactMap { folder in
+                availableThemes = folders.compactMap { folder -> Theme? in
+            guard (try? folder.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else {
+                return nil
+            }
+
             let jsonURL = folder.appendingPathComponent("theme.json")
-            guard let data = try? Data(contentsOf: jsonURL),
-                  let theme = try? decoder.decode(Theme.self, from: data)
+            guard
+                let data = try? Data(contentsOf: jsonURL),
+                let spec = try? decoder.decode(ThemeSpec.self, from: data)
             else { return nil }
 
-            // MVP constraint
-            guard theme.frameCount == 10 else { return nil }
+            // Enforce MVP constraints
+            guard (4...10).contains(spec.frames) else { return nil }
+            guard spec.id == folder.lastPathComponent else { return nil }
 
-            // Validate frames exist (png or jpg)
-            for i in 0..<10 {
-                guard frameURLInFolder(folder, index: i) != nil else { return nil }
+            // Validate frames exist
+            for i in 0..<spec.frames {
+                let base = String(format: spec.resolvedPattern, i)
+                let png = folder.appendingPathComponent("\(base).png")
+                let jpg = folder.appendingPathComponent("\(base).jpg")
+                guard fm.fileExists(atPath: png.path) || fm.fileExists(atPath: jpg.path) else {
+                    return nil
+                }
             }
 
-            return theme
-        }.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-    }
-
-    private func frameURLInFolder(_ folder: URL, index: Int) -> URL? {
-        let png = folder.appendingPathComponent(String(format: "frame_%02d.png", index))
-        if fm.fileExists(atPath: png.path) { return png }
-
-        let jpg = folder.appendingPathComponent(String(format: "frame_%02d.jpg", index))
-        if fm.fileExists(atPath: jpg.path) { return jpg }
-
-        return nil
-    }
-
-    // MARK: - Bundled forest (flat resources) → Disk copy
-
-    private func copyBundledForestIfMissing() throws {
-        let destFolder = themesDir.appendingPathComponent("forest")
-        if fm.fileExists(atPath: destFolder.path) { return }
-
-        try fm.createDirectory(at: destFolder, withIntermediateDirectories: true)
-
-        // Copy theme.json (bundled at Resources root)
-        if let themeJSON = Bundle.main.url(forResource: "theme", withExtension: "json") {
-            try fm.copyItem(at: themeJSON, to: destFolder.appendingPathComponent("theme.json"))
-        } else {
-            // If theme.json isn't bundled, we can't proceed safely
-            throw NSError(domain: "Theme", code: 1)
+            return Theme(
+                id: spec.id,
+                name: spec.name,
+                frames: spec.frames,
+                directory: folder,
+                framePattern: spec.resolvedPattern
+            )
         }
-
-        // Copy frames (png preferred, jpg fallback)
-        for i in 0..<10 {
-            let base = String(format: "frame_%02d", i)
-            let src = Bundle.main.url(forResource: base, withExtension: "png")
-                ?? Bundle.main.url(forResource: base, withExtension: "jpg")
-
-            guard let src else {
-                throw NSError(domain: "Theme", code: 2)
-            }
-
-            let dest = destFolder.appendingPathComponent("\(base).\(src.pathExtension)")
-            try fm.copyItem(at: src, to: dest)
-        }
+        .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 }
 

@@ -7,14 +7,21 @@
 
 import SwiftUI
 import ServiceManagement
+import AppKit
 
 struct PreferencesView: View {
     @State private var config = ConfigStore.shared.loadConfig()
     @State private var token = KeychainStore.shared.loadToken() ?? ""
     @State private var status = ""
+    @State private var themes: [Theme] = []
 
     var body: some View {
         Form {
+            Section("Themes") {
+                themePickerRow
+                importThemeRow
+            }
+
             Section("GitHub") {
                 TextField("Repo (owner/name)", text: $config.repoFullName)
                 TextField("Issue label", text: $config.issueLabel)
@@ -65,14 +72,6 @@ struct PreferencesView: View {
                     }
             }
 
-            Section("Theme") {
-                Picker("Theme", selection: $config.selectedThemeId) {
-                    ForEach(ThemeManager.shared.availableThemes, id: \.id) {
-                        Text($0.name).tag($0.id)
-                    }
-                }
-            }
-
             Button("Save") { save() }
 
             if !status.isEmpty {
@@ -81,6 +80,76 @@ struct PreferencesView: View {
         }
         .padding(16)
         .frame(width: 420)
+        .onAppear {
+            ThemeManager.shared.bootstrapAndLoadThemes()
+            themes = ThemeManager.shared.availableThemes
+
+            // IMPORTANT: avoid SwiftUI Picker crash when selection has no matching tag
+            if themes.isEmpty {
+                if !config.selectedThemeId.isEmpty {
+                    config.selectedThemeId = ""
+                }
+            } else if !themes.contains(where: { $0.id == config.selectedThemeId }) {
+                config.selectedThemeId = themes[0].id
+            }
+        }
+    }
+
+
+    private var themePickerRow: some View {
+        Group {
+            if themes.isEmpty {
+                HStack {
+                    Text("Theme")
+                    Spacer()
+                    Text("No themes installed")
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                Picker("Theme", selection: $config.selectedThemeId) {
+                    ForEach(themes, id: \.id) { theme in
+                        Text(theme.name).tag(theme.id)
+                    }
+                }
+            }
+        }
+    }
+
+    private var importThemeRow: some View {
+        HStack {
+            Button("Import Theme…") { importTheme() }
+            Spacer()
+            Text("Install from .zip or folder")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func importTheme() {
+        let panel = NSOpenPanel()
+        panel.title = "Import Theme"
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [] // allow any; we validate zip/folder
+
+        if panel.runModal() != .OK { return }
+        guard let picked = panel.url else { return }
+
+        do {
+            let result = try ThemeInstaller.importTheme(from: picked)
+            ThemeManager.shared.bootstrapAndLoadThemes()
+            themes = ThemeManager.shared.availableThemes
+
+            switch result {
+            case .installed(let theme):
+                // Auto-select imported theme
+                config.selectedThemeId = theme.id
+                status = "Imported theme: \(theme.name) ✅"
+            }
+        } catch {
+            status = "Theme import failed: \(error.localizedDescription)"
+        }
     }
 
     private func save() {

@@ -70,48 +70,53 @@ final class Orchestrator {
             didApplyWallpaperThisSession = false
         }
 
+        let closed: Int
         do {
-            let closed = try await github.fetchClosedIssues(
+            closed = try await github.fetchClosedIssues(
                 repo: config.repoFullName,
                 label: config.issueLabel,
                 since: cycleStart,
                 token: token
             )
-
-            let capped = min(closed, config.totalSteps)
-            let snap = engine.compute(completed: capped, steps: config.totalSteps)
-
-            if let url = ThemeManager.shared.frameURL(
-                themeId: config.selectedThemeId,
-                index: snap.imageIndex
-            ) {
-                // Apply if index changed OR we haven't applied since launch
-                if snap.imageIndex != cycle.lastImageIndex || !didApplyWallpaperThisSession {
-                    try WallpaperSetter.set(url)
-                    didApplyWallpaperThisSession = true
-
-                    cycle.lastImageIndex = snap.imageIndex
-                    try? ConfigStore.shared.saveCycle(cycle)
-                }
-
-                if let url = ThemeManager.shared.frameURL(
-                themeId: config.selectedThemeId,
-                index: snap.imageIndex
-            ) {
-                // Apply if index changed; always safe to re-apply, but keep it minimal
-                if snap.imageIndex != cycle.lastImageIndex {
-                    try WallpaperSetter.set(url)
-                    cycle.lastImageIndex = snap.imageIndex
-                    try? ConfigStore.shared.saveCycle(cycle)
-                }
-            }
-            }
-
-            lastRefreshedAt = Date()
-            onStatusUpdate?(statusText(completed: capped, total: config.totalSteps))
         } catch {
             onStatusUpdate?(mapErrorToStatus(error))
+            return
         }
+
+
+        // 2) Compute progress
+        let capped = min(closed, config.totalSteps)
+        let snap = engine.compute(completed: capped, steps: config.totalSteps)
+
+        // 3) Validate theme  frame path before attempting to set wallpaper
+        guard ThemeManager.shared.availableThemes.contains(where: { $0.id == config.selectedThemeId }) else {
+            lastRefreshedAt = Date()
+            onStatusUpdate?("Theme '\(config.selectedThemeId)' not found")
+            return
+        }
+
+        guard let url = ThemeManager.shared.frameURL(themeId: config.selectedThemeId, index: snap.imageIndex) else {
+            lastRefreshedAt = Date()
+            onStatusUpdate?("Missing frame \(snap.imageIndex) for '\(config.selectedThemeId)'")
+            return
+        }
+
+        // 4) Apply wallpaper (surface wallpaper errors distinctly)
+        if snap.imageIndex != cycle.lastImageIndex || !didApplyWallpaperThisSession {
+            do {
+                try WallpaperSetter.set(url)
+                didApplyWallpaperThisSession = true
+                cycle.lastImageIndex = snap.imageIndex
+                try? ConfigStore.shared.saveCycle(cycle)
+            } catch {
+                lastRefreshedAt = Date()
+                onStatusUpdate?("Wallpaper failed: \(error.localizedDescription)")
+                return
+            }
+        }
+
+        lastRefreshedAt = Date()
+        onStatusUpdate?(statusText(completed: capped, total: config.totalSteps))
     }
 
     private func statusText(completed: Int, total: Int) -> String {
@@ -163,7 +168,6 @@ final class Orchestrator {
         timer.setEventHandler { [weak self] in
             guard let self else { return }
             Task { @MainActor in
-                self.refreshNow()
                 self.refreshNow(manual: false)
             }
         }

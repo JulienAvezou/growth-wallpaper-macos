@@ -2,8 +2,7 @@
 //  GrowthWallpaperApp.swift
 //  GrowthWallpaper
 //
-//  Created by Julien Avezou on 14/01/2026.
-//
+// © 2026 Julien Avezou
 
 import SwiftUI
 

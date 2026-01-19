@@ -1,71 +1,153 @@
-# Growth Wallpaper (macOS)
+# GrowthWallpaper 🌱
 
-### Install. Paste a GitHub token. Your desktop grows as you ship.
+A macOS menu bar app that turns your **GitHub progress into a living wallpaper**.
 
-#### Menubar app that grows your desktop wallpaper as you close GitHub issues during a daily/weekly cycle.
+Close issues → your wallpaper grows.
+No accounts. No backend. No tracking.
 
-#### We don’t store anything about you. Everything runs on your local machine.
+---
 
-## How it works
+## What is GrowthWallpaper?
 
-- Connect a GitHub repo
-- Choose a goal (4–10 steps)
-- Close issues with a label
-- Your wallpaper grows
+GrowthWallpaper is a lightweight macOS app that visually represents progress toward a goal using your desktop wallpaper.
+
+You connect it to a GitHub repository, choose a theme, and define a goal (number of issues).
+As issues are closed, the wallpaper evolves through a sequence of images.
+
+Think:
+
+- 🌲 a forest slowly growing
+- 🏛 a structure being built
+- 🌅 a scene becoming richer over time
+
+---
+
+## Key Features
+
+- 🌱 **Progress-based wallpapers** (not time-based)
+- 🧠 **Uses GitHub issues** as the progress signal
+- 🖥 **Native macOS menu bar app**
+- 🔐 **GitHub token stored in Keychain**
+- 🚫 **No backend, no telemetry, no accounts**
+- 🎨 **Import custom themes** (folders or ZIPs)
+- ⚙️ **Configurable steps & reset cadence**
+
+---
+
+## How It Works
+
+1. You define a goal (e.g. 6 issues)
+2. You close GitHub issues with a specific label
+3. Each completed step advances the wallpaper
+4. At the end of the cycle (daily / weekly), it resets
+
+The app polls GitHub periodically (default: every 15–60 minutes).
+
+---
+
+## Installation (MVP)
+
+> ⚠️ The app is currently unsigned (early MVP).
+
+1. Download the latest `.zip` from **GitHub Releases**
+2. Unzip `GrowthWallpaper.app`
+3. Move it to your **Applications** folder
+4. Open it
+5. If macOS blocks it:
+   - Right-click → **Open**
+   - Or go to **System Settings → Privacy & Security → Open Anyway**
+
+The 🌱 icon will appear in your menu bar.
+
+---
 
 ## Setup
 
-1. Download and open the app.
-2. Create a GitHub Personal Access Token (PAT).
-3. Open Preferences:
-   - Repo: `owner/repo`
-   - Label: `wallpaper-goal` (or your label)
-   - Poll interval: 15/30/60 minutes
-   - Theme: Forest
-4. Click “Save & Apply”.
+Open **Preferences** from the menu bar:
 
-## Development
+- **GitHub Repo**: `owner/repo`
+- **Issue label**: e.g. `wallpaper-goal`
+- **Personal Access Token (PAT)** (read-only)
+- **Total steps**: 4–10
+- **Reset cadence**: Daily or Weekly
+- **Poll interval**: 15–60 minutes
+- **Theme**: select or import one
 
-- SwiftUI lifecycle + AppDelegate bridge
-- No backend
-- GitHub REST API
+Click **Save**.
 
-## Privacy
-
-- GitHub access tokens are stored securely in the macOS Keychain and never written to disk in plain text.
-- The app only communicates with the GitHub API to fetch issue counts for the repositories you configure.
-- No data is sent to any third-party servers and there is no backend operated by this app.
-- The app collects no analytics, no telemetry, and no usage tracking of any kind.
-
-## macOS Security Notice (Unsigned App)
-
-This app is currently unsigned (no Apple Developer certificate yet).
-On first launch, macOS may block it.
-
-How to open it safely:
-
-- Download and unzip GrowthWallpaper-macos.zip
-- Move GrowthWallpaper.app to /Applications (⚠️ Running the app from Downloads may cause macOS to block saving settings)
-- Right-click the app → Open
-- Click Open again in the dialog
-
-Alternatively:
-
-- System Settings → Privacy & Security → “Open Anyway”
-
-This is a standard macOS protection mechanism.
-The app is open source — you can inspect the code before running it.
-
-This app is unsigned to keep the MVP simple.
-Code signing and notarization will be added once the project stabilizes.
-
-## Troubleshooting
-
-- `Repo not found`: ensure repo is `owner/repo` (not a full URL)
-- `Token invalid/expired`: recreate token and save again
-- `Rate limit`: wait until the time shown in the status line
-
-⚠️ This project is in early development. APIs, config, and theme formats may evolve
 ⚠️ For the PAT, please use the smallest scope needed and suggest using fine-grained PAT limited to a single repo if possible
-⚠️ If the polling or refresh of wallpaper frames are not working, explicitly press the save button from preferences again
-⚠️ Make sure you only have one copy of GrowthWallpaper installed
+
+---
+
+## Themes 🎨
+
+Themes define how progress looks visually.
+
+You can:
+
+- Import a theme folder
+- Import a `.zip`
+- Create your own themes
+
+See [`THEMES.md`](./THEMES.md) for full details.
+
+---
+
+## Screenshots & Demo
+
+![Menu bar & preferences](docs/screenshots/preferences.png)
+
+![Theme import](docs/screenshots/theme-import.png)
+
+---
+
+## Privacy & Security
+
+- GitHub token is stored in **macOS Keychain**
+- Only GitHub’s REST API is called (issue counts)
+- No data is sent to any server
+- No telemetry or analytics
+
+This app runs entirely on your machine.
+
+---
+
+## Open Source
+
+GrowthWallpaper is open source and intentionally simple.
+
+Contributions welcome:
+
+- Bug fixes
+- UX improvements
+- Themes
+- Documentation
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+
+---
+
+## Status
+
+This is an **early MVP**:
+
+- APIs may change
+- No auto-updates yet
+- No code signing yet
+
+The goal is to keep it:
+
+- Calm
+- Transparent
+- Developer-friendly
+
+---
+
+## License
+
+Code is open source.
+Theme assets remain the property of their creators unless stated otherwise.
+
+---
+
+If you like the idea, ⭐ the repo or share it.

@@ -19,7 +19,7 @@ final class ConfigStore {
             totalSteps: 6,
             resetCadence: .weekly,
             pollMinutes: 30,
-            selectedThemeId: "forest",
+            selectedThemeId: "",
             launchAtLogin: false
         )
     }
@@ -35,7 +35,7 @@ final class ConfigStore {
            let state = try? decoder.decode(CycleState.self, from: data) {
             return state
         }
-        return CycleState(cycleStartISO: "", lastImageIndex: 0)
+        return CycleState(cycleStartISO: "", lastImageIndex: -1)
     }
 
     func saveCycle(_ state: CycleState) throws {

@@ -16,7 +16,14 @@ enum WallpaperSetter {
 
         let ws = NSWorkspace.shared
         for screen in NSScreen.screens {
-            try ws.setDesktopImageURL(url, for: screen, options: [:])
+            try ws.setDesktopImageURL(
+                url,
+                for: screen,
+                options: [
+                    .allowClipping: true,
+                    .imageScaling: NSImageScaling.scaleProportionallyUpOrDown.rawValue
+                ]
+            )
         }
     }
 }
