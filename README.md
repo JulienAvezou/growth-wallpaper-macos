@@ -156,3 +156,5 @@ Theme assets remain the property of their creators unless stated otherwise.
 ---
 
 If you like the idea, ⭐ the repo or share it.
+
+And join the community discussions [here](https://github.com/JulienAvezou/growth-wallpaper-macos/discussions)
