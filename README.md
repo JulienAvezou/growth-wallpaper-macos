@@ -102,7 +102,7 @@ See [`THEMES.md`](./THEMES.md) for full details.
 
 ![Theme import](docs/screenshots/theme-import.png)
 
-https://github.com/user-attachments/assets/4e04e77b-7b30-4974-a985-cc6e6dc7b4ce
+https://github.com/user-attachments/assets/fda73ff0-9537-437e-8f9e-541d516437e1
 
 ---
 
