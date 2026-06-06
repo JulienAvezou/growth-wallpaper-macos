@@ -195,7 +195,3 @@ Tradeoffs:
 - `GrowthWallpaper/GrowthWallpaper/Core/ThemeInstaller.swift`: theme folder and ZIP import.
 - `GrowthWallpaper/GrowthWallpaper/Core/ThemeValidator.swift`: theme manifest and asset validation.
 - `GrowthWallpaper/GrowthWallpaper/Core/WallpaperSetter.swift`: multi-screen wallpaper application.
-
-## Interview-Ready Summary
-
-GrowthWallpaper is a local-first native macOS app with a small but intentional architecture: SwiftUI and AppKit for the desktop experience, GitHub REST as the external progress source, Keychain for secret storage, JSON files for inspectable local state, and an asset-based theme system for extensibility. The system avoids backend complexity because the product does not need accounts, shared state, or server-side computation. The strongest engineering decisions are the privacy-preserving trust boundary, deterministic progress pipeline, explicit failure handling, and clean separation between app configuration, external API access, progress calculation, theme validation, and OS-level wallpaper integration.
